@@ -9,9 +9,6 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-
-//var querystring = request('querystring') // 用于GET请求
-
 function encodePwd(pwd) {
     return new Buffer(pwd).toString('base64');
 }
@@ -37,9 +34,6 @@ function requestLoginStep2(token, mobileNo, /*smsType, loginType, redirectUrl,*/
     }, cb);
 }
 
-/**
- * 发短信验证码
- */
 function getVerifyCode(cb) {
     request.post('http://www.114yygh.com/v/sendorder.htm', {
         form : {
@@ -68,7 +62,6 @@ function getVerifyCode(cb) {
  * patientId 就诊人编号
  */
 function grabTicket(hospitalId, departmentId, dutyDate, hospitalCardId, patientId, cb) {
-    // console.log('抢票...');
     async.waterfall([
         function findTicket(cb) { // 查找号源
             request.post('http://www.114yygh.com/dpt/build/duty.htm', {
@@ -160,22 +153,22 @@ function parseToken(body) {
     return token;
 }
 
-var MOBILE_NO = '17600699857';      // 账号
-var PASSWORD = 'hm51z9wg';          // 密码
-var HOSPITAL_ID = '142';            // 北医三院
-var DEPARTMENT_ID = '200039602';    // 运动医学科
-var DUTY_DATE = '2019-05-31';       // 挂号日期
-var HOSPITAL_CARD_ID = '001756374100';          // 就诊卡ID
-var PATIENT_ID = '241434227';                   // 就诊人ID
+var MOBILE_NO = '17600699857';              // 账号
+var PASSWORD = 'your password';             // 密码
+var HOSPITAL_ID = '142';                    // 北医三院
+var DEPARTMENT_ID = '200039602';            // 运动医学科
+var DUTY_DATE = '2019-05-31';               // 挂号日期
+var HOSPITAL_CARD_ID = '001756374100';      // 就诊卡ID
+var PATIENT_ID = '241434227';               // 就诊人ID
 
 // 调试用...
-// var MOBILE_NO = '17600699857';      // 账号
-// var PASSWORD = 'hm51z9wg';          // 密码
-// var HOSPITAL_ID = '142';            // 北医三院
-// var DEPARTMENT_ID = '200047442';    // 中医学科
-// var DUTY_DATE = '2019-05-31';       // 挂号日期
-// var HOSPITAL_CARD_ID = '001756374100';          // 就诊卡ID
-// var PATIENT_ID = '241434227';                   // 就诊人ID
+// var MOBILE_NO = '17600699857';                   // 账号
+// var PASSWORD = 'your password';                  // 密码
+// var HOSPITAL_ID = '142';                         // 北医三院
+// var DEPARTMENT_ID = '200047442';                 // 中医学科
+// var DUTY_DATE = '2019-05-31';                    // 挂号日期
+// var HOSPITAL_CARD_ID = '001756374100';           // 就诊卡ID
+// var PATIENT_ID = '241434227';                    // 就诊人ID
 
 function main() {
     async.waterfall([
@@ -192,7 +185,7 @@ function main() {
         function step2(token, cb) { // 登录之输入密码
             // console.log('token:' + token);
             requestLoginStep2(token, MOBILE_NO, PASSWORD, function(err, response, body) {
-                if(err/* || response.statusCode == 302*/) { // 重定向?
+                if(err/* || response.statusCode == 302*/) {
                     cb({code : -1, msg : '登录失败'});
                     return;
                 }
@@ -202,8 +195,8 @@ function main() {
         function loop(cb) { // 抢号循环
 
             /**
-             * 请求一个非法日期时 {"data":[],"hasError":true,"code":4023,"msg":"不在放号周期内"} 
-             * 请求一个满号日期时，正常返回医生列表
+             * 请求一个非法日期时返回{"data":[],"hasError":true,"code":4023,"msg":"不在放号周期内"} 
+             * 请求一个满号日期时返回医生列表
             request.post('http://www.114yygh.com/dpt/build/duty.htm', {
                 form : {
                     'hospitalId' : '142',
@@ -216,15 +209,6 @@ function main() {
             });
             */
 
-            // grabTicket(HOSPITAL_ID, DEPARTMENT_ID, DUTY_DATE, HOSPITAL_CARD_ID, PATIENT_ID, function(result) {
-            //     isSuccess = result;
-            //     if(isSuccess) {
-            //         console.log('抢号成功');
-            //     }
-            //     setTimeout(cb, 1000); // 1s执行1次
-            // });
-
-            // console.log('抢票循环...');
             var nextGrab = function() {
                 grabTicket(HOSPITAL_ID, DEPARTMENT_ID, DUTY_DATE, HOSPITAL_CARD_ID, PATIENT_ID, function(isSuccess) {
                     if(isSuccess) {
@@ -247,17 +231,6 @@ function main() {
 
 main();
 
-// request.post('http://www.114yygh.com/dpt/build/duty.htm', {
-//     form : {
-//         'hospitalId' : '142',
-//         'departmentId' : '200039602',
-//         'dutyDate' : '2019-06-03',
-//         'isAjax' : true
-//     }
-// }, function(err, resp, body) {
-//     console.log(body);
-// });
-
 // 登录第一步完成后会返回登录第二步的页面，里面包含一个隐藏的token
 /*
 <!DOCTYPE html><html lang="en"><head><script type="text/javascript">
@@ -268,6 +241,6 @@ if(a.code=="200"){$(".error").html(prompts.sms_code_send_ok).show();$(".getCode"
 $("input[name='next']").click(function(){var a=$(this).attr("id");$(".error").html("").hide();a=="loginStep2_pwd"?(a=$("#pwd").val(),a==""?errorMsg("\u5bc6\u7801\u4e0d\u80fd\u4e3a\u7a7a"):($("#password").val(Base64.encode(a)),$("#loginStep2_pwd_form").submit())):$("#yzm").val()==""?errorMsg("\u624b\u673a\u9a8c\u8bc1\u7801\u4e0d\u80fd\u4e3a\u7a7a"):$("#loginStep2_yzm_form").submit()});$(".passLogin").click(function(){var a=$(this).attr("att");$(".error").html("").hide();a=="yzm"?($("#pwd_div").hide(),
 $("#yzm_div").show()):($("#pwd_div").show(),$("#yzm_div").hide())})});</script></body></html>
 */
-// 在发送登录请求时对密码进行了base64编码
-// var pwd = new Buffer('hm51z9wg').toString('base64');
+// 在发送登录请求时需要对密码进行base64编码
+// var pwd = new Buffer('your password').toString('base64');
 // console.log(pwd)
